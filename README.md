@@ -1,2 +1,2 @@
 # ml-model-template
-Template for machine learning model
+Template for machine learning project
