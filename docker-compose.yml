@@ -1,0 +1,16 @@
+version: '3'
+service:
+  serving:
+    image: tensorflow/serving:2.2.0
+    environment:
+      - MODEL_NAME=lr
+      - MODEL_BASE_PATH=/opt
+    volumes:
+      - /opt:/opt
+    ports:
+      - 8501:8501
+  training:
+    image: training:example
+    volumes:
+      - /opt:/opt
+

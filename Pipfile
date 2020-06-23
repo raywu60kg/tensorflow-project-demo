@@ -1,0 +1,15 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+pylint = "*"
+
+[packages]
+tensorflow = "==2.1.0"
+fastapi = "==0.54.1"
+uvicorn = "==0.11.5"
+
+[requires]
+python_version = "3.6"
