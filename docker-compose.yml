@@ -1,16 +1,35 @@
 version: '3'
-service:
+services:
+  db:
+    image: postgres:9.6
+    restart: always
+    environment:
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=database
+    ports: 
+      - 5432:5432
+
   serving:
-    image: tensorflow/serving:2.2.0
+    image: tensorflow/serving:2.1.0
     environment:
       - MODEL_NAME=lr
       - MODEL_BASE_PATH=/opt
     volumes:
-      - /opt:/opt
+      - /opt/serving_model:/opt/serving_model
     ports:
       - 8501:8501
+    depends_on:
+      - training
+
+
   training:
-    image: training:example
+    build: .
+    ports:
+      - 5000:5000
     volumes:
-      - /opt:/opt
+      - /opt/serving_model:/opt/serving_model
+    depends_on:
+      - db
+        
 
