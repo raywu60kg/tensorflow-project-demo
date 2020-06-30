@@ -1,10 +1,11 @@
 import os
-import ray
+from ray import tune
 
 predict_categories = ["Setosa", "Versicolor", "Virginica"]
 hyperparameter_space = {
-    "lr": ray.tune.loguniform(0.001, 0.1),
-    "dense_1": ray.tune.uniform(2, 128),
-    "dense_2": ray.tune.uniform(2, 128),
+    "lr": tune.loguniform(0.001, 0.1),
+    "dense_1": tune.uniform(2, 128),
+    "dense_2": tune.uniform(2, 128),
 }
 num_samples = 20
+epochs = 5

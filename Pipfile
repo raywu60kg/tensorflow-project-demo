@@ -16,7 +16,7 @@ fastapi = "==0.54.1"
 uvicorn = "==0.11.5"
 pandas = "==0.22"
 psycopg2-binary = "==2.8.5"
-ray = "==0.8.6"
+ray = {extras = ["tune"],version = "*"}
 
 [requires]
 python_version = "3.6"

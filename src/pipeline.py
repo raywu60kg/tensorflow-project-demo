@@ -85,27 +85,29 @@ class PostgreSQL2Tfrecord(Db2Tfrecord):
 
 
 class Pipeline:
-    def __init__(self, filenames, config):
+    def __init__(self, filenames, epochs):
 
-        self.epochs = config["epochs"]
+        self.epochs = epochs
         full_dataset = tf.data.TFRecordDataset(filenames)
         data_size = 0
         for row in full_dataset:
             data_size += 1
-        train_size = int(0.7 * data_size)
-        val_size = int(0.15 * data_size)
-        test_size = int(0.15 * data_size)
-        full_dataset = full_dataset.shuffle()
+        train_size = int(0.7 * data_size*self.epochs)
+        val_size = int(0.15 * data_size*self.epochs)
+        test_size = int(0.15 * data_size*self.epochs)
+        
+        full_dataset = full_dataset.shuffle(buffer_size=1)
+        full_dataset = full_dataset.repeat(self.epochs)
         self.train_dataset = full_dataset.take(train_size)
         self.test_dataset = full_dataset.skip(train_size)
         self.val_dataset = self.test_dataset.skip(test_size)
         self.test_dataset = self.test_dataset.take(test_size)
 
     def get_train_data(self):
-        return self.train_dataset.repeat(self.epochs)
+        return self.train_dataset
 
     def get_val_data(self):
-        return self.val_dataset.repeat(self.epochs)
+        return self.val_dataset
 
     def get_test_data(self):
-        return self.test_dataset.repeat(self.epochs)
+        return self.test_dataset
