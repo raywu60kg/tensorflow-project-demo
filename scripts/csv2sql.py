@@ -21,7 +21,7 @@ cur.execute('''CREATE TABLE IRIS
     VARIETY TEXT);''')
 print("Table created successfully")
 
-data = pd.read_csv("iris.csv")
+data = pd.read_csv("data/iris.csv")
 for idx in range(len(data)):
     cur.execute(
         (
