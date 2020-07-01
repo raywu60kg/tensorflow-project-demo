@@ -1,12 +1,14 @@
 import tensorflow as tf
 import ray
-from src.model import create_model
+from src.model import KerasModel
 from src.config import hyperparameter_space, num_samples
+from src.pipeline import Pipeline
+from src.call_back import TuneReporterCallback
+
+keras_model = KerasModel()
 
 
 class TrainModel:
-    def tuning(self):
-        raise NotImplementedError
 
     def get_best_model(self):
         raise NotImplementedError
@@ -16,11 +18,16 @@ class TrainModel:
 
 
 class TrainKerasModel(TrainModel):
-    def tuning(self, hp):
+    def __init__(self, train_dataset, val_dataset):
+        self.train_dataset = train_dataset
+        self.val_dataset = val_dataset
 
-        model = create_model(
-            learning_rate=hp["lr"], dense_1=hp["dense_1"], dense_2=hp["dense_2"])
-        checkpoint_callback = ModelCheckpoint(
+    def tuning(self, hp):
+        model = keras_model.create_model(
+            learning_rate=hp["lr"],
+            dense_1=hp["dense_1"],
+            dense_2=hp["dense_2"])
+        checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(
             "model.h5", monitor='loss', save_best_only=True, save_freq=2)
 
         # Enable Tune to make intermediate decisions by using a Tune
@@ -29,14 +36,14 @@ class TrainKerasModel(TrainModel):
 
         # Train the model
         model.fit(
-            train_x, train_y,
-            validation_data=(test_x, test_y),
-            verbose=0,
-            batch_size=10,
-            epochs=20,
+            self.train_dataset,
+            validation_data=self.val_dataset,
+            verbose=1,
+            batch_size=5,
+            epochs=10,
             callbacks=callbacks)
 
-    def get_best_model(self):
+    def get_best_model(self, hyperparameter_space, num_samples):
         ray.shutdown()
         ray.init(log_to_driver=False)
         analysis = ray.tune.run(

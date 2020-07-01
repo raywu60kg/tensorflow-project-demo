@@ -1,7 +1,7 @@
 import psycopg2
 import tensorflow as tf
 import logging
-from src.config import predict_categories
+from src.config import predict_categories, label_name
 
 
 class Db2Tfrecord:
@@ -53,8 +53,9 @@ class PostgreSQL2Tfrecord(Db2Tfrecord):
         return data
 
     def format_data(self, data):
-        data["variety"] = list(
+        data[label_name] = list(
             map(lambda x: predict_categories.index(x), data["variety"]))
+        data[label_name] = tf.keras.utils.to_categorical(data[label_name])
         return data
 
     def write2tfrecord(self, data, filename):
@@ -75,8 +76,8 @@ class PostgreSQL2Tfrecord(Db2Tfrecord):
                         float_list=tf.train.FloatList(
                             value=[data["petal_width"][i]])),
                     "variety": tf.train.Feature(
-                        int64_list=tf.train.Int64List(
-                            value=[data["variety"][i]]))
+                        float_list=tf.train.FloatList(
+                            value=data["variety"][i]))
                 }
                 example_proto = tf.train.Example(
                     features=tf.train.Features(feature=feature))
@@ -85,23 +86,34 @@ class PostgreSQL2Tfrecord(Db2Tfrecord):
 
 
 class Pipeline:
-    def __init__(self, filenames, epochs):
-
-        self.epochs = epochs
-        full_dataset = tf.data.TFRecordDataset(filenames)
+    def __init__(self, tfrecords_filenames):
+        self.features = {
+            "sepal_length": tf.io.FixedLenFeature([], tf.float32),
+            "sepal_width": tf.io.FixedLenFeature([], tf.float32),
+            "petal_length": tf.io.FixedLenFeature([], tf.float32),
+            "petal_width": tf.io.FixedLenFeature([], tf.float32),
+            "variety": tf.io.FixedLenFeature([], tf.int64)
+        }
+        self.epochs = 5
+        full_dataset = tf.data.TFRecordDataset(tfrecords_filenames)
         data_size = 0
         for row in full_dataset:
             data_size += 1
         train_size = int(0.7 * data_size*self.epochs)
         val_size = int(0.15 * data_size*self.epochs)
         test_size = int(0.15 * data_size*self.epochs)
-        
+
         full_dataset = full_dataset.shuffle(buffer_size=1)
+        full_dataset = full_dataset.map(self.parse_data)
         full_dataset = full_dataset.repeat(self.epochs)
         self.train_dataset = full_dataset.take(train_size)
         self.test_dataset = full_dataset.skip(train_size)
         self.val_dataset = self.test_dataset.skip(test_size)
         self.test_dataset = self.test_dataset.take(test_size)
+
+    def parse_data(self, serialized):
+        parsed_example = tf.io.parse_example(serialized, self.features)
+        return parsed_example
 
     def get_train_data(self):
         return self.train_dataset

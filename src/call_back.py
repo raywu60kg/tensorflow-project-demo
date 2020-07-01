@@ -1,5 +1,5 @@
 import ray
-
+import tensorflow as tf
 
 class TuneReporterCallback(tf.keras.callbacks.Callback):
     """Tune Callback for Keras.
