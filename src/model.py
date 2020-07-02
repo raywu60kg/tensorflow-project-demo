@@ -26,7 +26,7 @@ class KerasModel(Model):
         x = tf.keras.layers.Dense(
             int(dense_2), activation='relu', name='fc2')(x)
         x = tf.keras.layers.Dense(3, activation='softmax', name=label_name)(x)
-        model = tf.keras.Model(inputs, x)
+        model = tf.keras.Model(inputs, {label_name: x})
 
         # model.add(tf.keras.layers.Dense(int(dense_1), input_shape=(
         #     4,), activation='relu', name='fc1'))

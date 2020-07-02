@@ -1,6 +1,6 @@
 from src.pipeline import PostgreSQL2Tfrecord
 from src.pipeline import Pipeline
-from src.config import epochs, feature_names, label_name
+from src.config import feature_names, label_name
 from tests.resources.test_data import test_data, test_format_data
 import os
 
@@ -8,7 +8,10 @@ package_dir = os.path.dirname(os.path.abspath(__file__))
 
 sql2tfrecord = PostgreSQL2Tfrecord()
 pipeline = Pipeline(
-    filenames=os.path.join(package_dir, "resources", "test_data.tfrecord"))
+    tfrecords_filenames=os.path.join(
+        package_dir, 
+        "resources", 
+        "test_data.tfrecord"))
 
 
 class TestPostgreSQL2Tfrecord:
@@ -23,7 +26,7 @@ class TestPostgreSQL2Tfrecord:
         save_data_dir = os.path.join(package_dir, "test_data.tfrecord")
         sql2tfrecord.write2tfrecord(test_format_data, save_data_dir)
         assert "test_data.tfrecord" in os.listdir(package_dir)
-        os.remove(save_data_dir)
+        # os.remove(save_data_dir)
 
 
 class TestPipeline:
@@ -32,10 +35,11 @@ class TestPipeline:
         train_data = pipeline.get_train_data()
         data_size = 0
 
+        print("@@@@", train_data.element_spec)
         for row in train_data:
             data_size += 1
         for feature_name in feature_names:
-            assert feature_name in train_data.element_spec.keys()
+            assert feature_name in train_data.element_spec[0].keys()
         assert data_size == 41
 
     def test_get_val_data(self):
@@ -44,7 +48,7 @@ class TestPipeline:
         for row in val_data:
             data_size += 1
         for feature_name in feature_names:
-            assert feature_name in val_data.element_spec.keys()
+            assert feature_name in val_data.element_spec[0].keys()
         assert data_size == 10
 
     def test_get_test_data(self):
@@ -53,5 +57,5 @@ class TestPipeline:
         for row in test_data:
             data_size += 1
         for feature_name in feature_names:
-            assert feature_name in test_data.element_spec.keys()
+            assert feature_name in test_data.element_spec[0].keys()
         assert data_size == 9

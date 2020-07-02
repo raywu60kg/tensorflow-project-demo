@@ -1,7 +1,7 @@
 import psycopg2
 import tensorflow as tf
 import logging
-from src.config import predict_categories, label_name
+from src.config import predict_categories, label_name, feature_names
 
 
 class Db2Tfrecord:
@@ -62,6 +62,11 @@ class PostgreSQL2Tfrecord(Db2Tfrecord):
         with tf.io.TFRecordWriter(filename) as writer:
             print(data.keys())
             for i in range(len(data[list(data.keys())[0]])):
+                # variety_feature_list = []
+                # for element in data["variety"][i]:
+                #     variety_feature_list.append(
+                #         tf.train.FloatList(value=[element]))
+
                 feature = {
                     "sepal_length": tf.train.Feature(
                         float_list=tf.train.FloatList(
@@ -92,7 +97,7 @@ class Pipeline:
             "sepal_width": tf.io.FixedLenFeature([], tf.float32),
             "petal_length": tf.io.FixedLenFeature([], tf.float32),
             "petal_width": tf.io.FixedLenFeature([], tf.float32),
-            "variety": tf.io.FixedLenFeature([], tf.int64)
+            "variety": tf.io.FixedLenFeature((3), tf.float32)
         }
         self.epochs = 5
         full_dataset = tf.data.TFRecordDataset(tfrecords_filenames)
@@ -106,6 +111,7 @@ class Pipeline:
         full_dataset = full_dataset.shuffle(buffer_size=1)
         full_dataset = full_dataset.map(self.parse_data)
         full_dataset = full_dataset.repeat(self.epochs)
+        full_dataset = full_dataset.batch(1, drop_remainder=True)
         self.train_dataset = full_dataset.take(train_size)
         self.test_dataset = full_dataset.skip(train_size)
         self.val_dataset = self.test_dataset.skip(test_size)
@@ -113,7 +119,12 @@ class Pipeline:
 
     def parse_data(self, serialized):
         parsed_example = tf.io.parse_example(serialized, self.features)
-        return parsed_example
+        # return tuple() + (parsed_example,)
+        inputs = {}
+        for key in parsed_example.keys():
+            if key in feature_names:
+                inputs[key] = parsed_example[key]
+        return (inputs, {label_name: parsed_example[label_name]})
 
     def get_train_data(self):
         return self.train_dataset

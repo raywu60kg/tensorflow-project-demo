@@ -1,5 +1,7 @@
 import ray
 import tensorflow as tf
+from ray.tune import track
+
 
 class TuneReporterCallback(tf.keras.callbacks.Callback):
     """Tune Callback for Keras.
@@ -13,5 +15,5 @@ class TuneReporterCallback(tf.keras.callbacks.Callback):
 
     def on_epoch_end(self, batch, logs={}):
         self.iteration += 1
-        ray.tune.track.log(keras_info=logs, mean_accuracy=logs.get(
+        track.log(keras_info=logs, mean_accuracy=logs.get(
             "accuracy"), mean_loss=logs.get("loss"))

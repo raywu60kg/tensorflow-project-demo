@@ -22,6 +22,13 @@ class TrainKerasModel(TrainModel):
         self.train_dataset = train_dataset
         self.val_dataset = val_dataset
 
+    def simple_train(self, hp):
+        model = keras_model.create_model(
+            learning_rate=hp["lr"],
+            dense_1=hp["dense_1"],
+            dense_2=hp["dense_2"])
+        model.fit(self.train_dataset)
+
     def tuning(self, hp):
         model = keras_model.create_model(
             learning_rate=hp["lr"],
@@ -39,9 +46,13 @@ class TrainKerasModel(TrainModel):
             self.train_dataset,
             validation_data=self.val_dataset,
             verbose=1,
-            batch_size=5,
             epochs=10,
             callbacks=callbacks)
+        print("@@@", self.train_dataset.element_spec)
+        # model.fit(
+        #     self.train_dataset,
+        #     verbose=1,
+        #     epochs=10)
 
     def get_best_model(self, hyperparameter_space, num_samples):
         ray.shutdown()
