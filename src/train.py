@@ -18,18 +18,26 @@ class TrainModel:
 
 
 class TrainKerasModel(TrainModel):
-    def __init__(self, train_dataset, val_dataset):
-        self.train_dataset = train_dataset
-        self.val_dataset = val_dataset
+    def __init__(self, pipeline):
+        self.pipeline = pipeline
 
     def simple_train(self, hp):
+        train_dataset = self.pipeline.get_train_data(hp["batch_size"])
+        val_dataset = self.pipeline.get_val_data(hp["batch_size"])
         model = keras_model.create_model(
             learning_rate=hp["lr"],
             dense_1=hp["dense_1"],
             dense_2=hp["dense_2"])
-        model.fit(self.train_dataset)
+        # model.fit(self.train_dataset)
+        model.fit(
+            train_dataset,
+            validation_data=val_dataset,
+            verbose=1,
+            epochs=hp["epochs"])
 
     def tuning(self, hp):
+        train_dataset = self.pipeline.get_train_data(hp["batch_size"])
+        val_dataset = self.pipeline.get_val_data(hp["batch_size"])
         model = keras_model.create_model(
             learning_rate=hp["lr"],
             dense_1=hp["dense_1"],
@@ -46,13 +54,8 @@ class TrainKerasModel(TrainModel):
             self.train_dataset,
             validation_data=self.val_dataset,
             verbose=1,
-            epochs=10,
+            epochs=hp["epochs"],
             callbacks=callbacks)
-        print("@@@", self.train_dataset.element_spec)
-        # model.fit(
-        #     self.train_dataset,
-        #     verbose=1,
-        #     epochs=10)
 
     def get_best_model(self, hyperparameter_space, num_samples):
         ray.shutdown()

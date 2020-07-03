@@ -9,8 +9,8 @@ package_dir = os.path.dirname(os.path.abspath(__file__))
 sql2tfrecord = PostgreSQL2Tfrecord()
 pipeline = Pipeline(
     tfrecords_filenames=os.path.join(
-        package_dir, 
-        "resources", 
+        package_dir,
+        "resources",
         "test_data.tfrecord"))
 
 
@@ -32,30 +32,30 @@ class TestPostgreSQL2Tfrecord:
 class TestPipeline:
 
     def test_get_train_data(self):
-        train_data = pipeline.get_train_data()
+        train_data = pipeline.get_train_data(batch_size=5)
         data_size = 0
-
-        print("@@@@", train_data.element_spec)
         for row in train_data:
+            print("###", row)
             data_size += 1
         for feature_name in feature_names:
             assert feature_name in train_data.element_spec[0].keys()
-        assert data_size == 41
+        print("@@@@", pipeline.data_size, pipeline.train_size)
+        assert data_size == 2
 
     def test_get_val_data(self):
-        val_data = pipeline.get_val_data()
+        val_data = pipeline.get_val_data(batch_size=5)
         data_size = 0
         for row in val_data:
             data_size += 1
         for feature_name in feature_names:
             assert feature_name in val_data.element_spec[0].keys()
-        assert data_size == 10
+        assert data_size == 1
 
     def test_get_test_data(self):
-        test_data = pipeline.get_test_data()
+        test_data = pipeline.get_test_data(batch_size=5)
         data_size = 0
         for row in test_data:
             data_size += 1
         for feature_name in feature_names:
             assert feature_name in test_data.element_spec[0].keys()
-        assert data_size == 9
+        assert data_size == 1

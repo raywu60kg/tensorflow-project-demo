@@ -99,19 +99,18 @@ class Pipeline:
             "petal_width": tf.io.FixedLenFeature([], tf.float32),
             "variety": tf.io.FixedLenFeature((3), tf.float32)
         }
-        self.epochs = 5
+
         full_dataset = tf.data.TFRecordDataset(tfrecords_filenames)
         data_size = 0
         for row in full_dataset:
             data_size += 1
-        train_size = int(0.7 * data_size*self.epochs)
-        val_size = int(0.15 * data_size*self.epochs)
-        test_size = int(0.15 * data_size*self.epochs)
-
+        self.data_size = data_size
+        train_size = int(0.7 * data_size)
+        val_size = int(0.15 * data_size)
+        test_size = int(0.15 * data_size)
+        self.train_size = train_size
         full_dataset = full_dataset.shuffle(buffer_size=1)
         full_dataset = full_dataset.map(self.parse_data)
-        full_dataset = full_dataset.repeat(self.epochs)
-        full_dataset = full_dataset.batch(1, drop_remainder=True)
         self.train_dataset = full_dataset.take(train_size)
         self.test_dataset = full_dataset.skip(train_size)
         self.val_dataset = self.test_dataset.skip(test_size)
@@ -119,18 +118,18 @@ class Pipeline:
 
     def parse_data(self, serialized):
         parsed_example = tf.io.parse_example(serialized, self.features)
-        # return tuple() + (parsed_example,)
+
         inputs = {}
         for key in parsed_example.keys():
             if key in feature_names:
                 inputs[key] = parsed_example[key]
         return (inputs, {label_name: parsed_example[label_name]})
 
-    def get_train_data(self):
-        return self.train_dataset
+    def get_train_data(self, batch_size):
+        return self.train_dataset.batch(batch_size)
 
-    def get_val_data(self):
-        return self.val_dataset
+    def get_val_data(self, batch_size):
+        return self.val_dataset.batch(batch_size)
 
-    def get_test_data(self):
-        return self.test_dataset
+    def get_test_data(self, batch_size):
+        return self.test_dataset.batch(batch_size)
