@@ -7,7 +7,7 @@ hyperparameter_space = {
     "dense_1": tune.uniform(2, 128),
     "dense_2": tune.uniform(2, 128),
     "epochs": tune.uniform(1, 5),
-    "batch_size": tune.sample_from([16,32])
+    "batch_size": tune.sample_from([16, 32])
 }
 feature_names = [
     'petal_length',

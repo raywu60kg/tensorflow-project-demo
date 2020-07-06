@@ -1,5 +1,6 @@
 import tensorflow as tf
 import ray
+
 from src.model import KerasModel
 from src.config import hyperparameter_space, num_samples
 from src.pipeline import Pipeline
@@ -34,14 +35,15 @@ class TrainKerasModel(TrainModel):
             validation_data=val_dataset,
             verbose=1,
             epochs=hp["epochs"])
+        return model
 
     def tuning(self, hp):
-        train_dataset = self.pipeline.get_train_data(hp["batch_size"])
-        val_dataset = self.pipeline.get_val_data(hp["batch_size"])
+        train_dataset = self.pipeline.get_train_data(int(hp["batch_size"]))
+        val_dataset = self.pipeline.get_val_data(int(hp["batch_size"]))
         model = keras_model.create_model(
-            learning_rate=hp["lr"],
-            dense_1=hp["dense_1"],
-            dense_2=hp["dense_2"])
+            learning_rate=float(hp["lr"]),
+            dense_1=int(hp["dense_1"]),
+            dense_2=int(hp["dense_2"]))
         checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(
             "model.h5", monitor='loss', save_best_only=True, save_freq=2)
 
@@ -58,12 +60,27 @@ class TrainKerasModel(TrainModel):
             callbacks=callbacks)
 
     def get_best_model(self, hyperparameter_space, num_samples):
+        # tuning here
+        def tuning(hp):
+            import tensorflow as tf
+            pipeline = Pipeline(tfrecords_filenames=hp["tfrecords_filenames"])
+            train_dataset = pipeline.get_train_data(int(hp["batch_size"]))
+            val_dataset = pipeline.get_val_data(int(hp["batch_size"]))
+            model = keras_model.create_model(
+                learning_rate=float(hp["lr"]),
+                dense_1=int(hp["dense_1"]),
+                dense_2=int(hp["dense_2"]))
+            checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(
+                "model.h5", monitor='loss', save_best_only=True, save_freq=2)
+            
         ray.shutdown()
         ray.init(log_to_driver=False)
+        print("iiinnnittt")
         analysis = ray.tune.run(
-            self.tuning, verbose=1,
+            tuning, verbose=1,
             config=hyperparameter_space,
             num_samples=num_samples)
+        print("aaffffeeerrr tune")
         log_dir = analysis.get_best_logdir("keras_info/val_loss", mode="min")
         tuned_model = tf.keras.models.load_model(logdir + "/model.h5")
         return tuned_model
