@@ -1,10 +1,11 @@
 import tensorflow as tf
 import ray
-
+import json
+import os
 from src.model import KerasModel
 from src.config import hyperparameter_space, num_samples
 from src.pipeline import Pipeline
-from src.call_back import TuneReporterCallback
+from src.callback import TuneReporterCallback
 
 keras_model = KerasModel()
 
@@ -37,30 +38,8 @@ class TrainKerasModel(TrainModel):
             epochs=hp["epochs"])
         return model
 
-    def tuning(self, hp):
-        train_dataset = self.pipeline.get_train_data(int(hp["batch_size"]))
-        val_dataset = self.pipeline.get_val_data(int(hp["batch_size"]))
-        model = keras_model.create_model(
-            learning_rate=float(hp["lr"]),
-            dense_1=int(hp["dense_1"]),
-            dense_2=int(hp["dense_2"]))
-        checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(
-            "model.h5", monitor='loss', save_best_only=True, save_freq=2)
-
-        # Enable Tune to make intermediate decisions by using a Tune
-        # Callback hook. This is Keras specific.
-        callbacks = [checkpoint_callback, TuneReporterCallback()]
-
-        # Train the model
-        model.fit(
-            self.train_dataset,
-            validation_data=self.val_dataset,
-            verbose=1,
-            epochs=hp["epochs"],
-            callbacks=callbacks)
-
     def get_best_model(self, hyperparameter_space, num_samples):
-        # tuning here
+
         def tuning(hp):
             import tensorflow as tf
             pipeline = Pipeline(tfrecords_filenames=hp["tfrecords_filenames"])
@@ -72,18 +51,31 @@ class TrainKerasModel(TrainModel):
                 dense_2=int(hp["dense_2"]))
             checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(
                 "model.h5", monitor='loss', save_best_only=True, save_freq=2)
-            
+            callbacks = [checkpoint_callback, TuneReporterCallback()]
+            model.fit(
+                train_dataset, validation_data=val_dataset,
+                verbose=1,
+                epochs=int(hp["epochs"]),
+                callbacks=callbacks)
         ray.shutdown()
         ray.init(log_to_driver=False)
-        print("iiinnnittt")
         analysis = ray.tune.run(
-            tuning, verbose=1,
+            tuning,
+            verbose=1,
             config=hyperparameter_space,
             num_samples=num_samples)
-        print("aaffffeeerrr tune")
         log_dir = analysis.get_best_logdir("keras_info/val_loss", mode="min")
-        tuned_model = tf.keras.models.load_model(logdir + "/model.h5")
+        tuned_model = tf.keras.models.load_model(log_dir + "/model.h5")
         return tuned_model
 
-    def write2serving_model(self, model, filename):
+    def save_model(self, model, filename):
+        test_dataset = self.pipeline.get_test_data(batch_size=1)
+        metrics = model.evaluate(test_dataset)
+
         model.save(filename, save_format='tf')
+        with open(os.path.join(filename, "metrics.json"), "w") as f:
+            json.dump(
+                {
+                    "name": filename,
+                    "loss": float(metrics[0]),
+                    "accuracy": float(metrics[1])}, f)

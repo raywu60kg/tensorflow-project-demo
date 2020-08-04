@@ -60,7 +60,6 @@ class PostgreSQL2Tfrecord(Db2Tfrecord):
 
     def write2tfrecord(self, data, filename):
         with tf.io.TFRecordWriter(filename) as writer:
-            print(data.keys())
             for i in range(len(data[list(data.keys())[0]])):
                 # variety_feature_list = []
                 # for element in data["variety"][i]:
