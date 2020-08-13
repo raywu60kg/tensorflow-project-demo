@@ -51,3 +51,10 @@ test_hyperparameter_space = {
     "epochs": tune.uniform(1, 5),
     "batch_size": tune.sample_from([16, 32])
 }
+test_simple_train_hyperparameters = {
+    "lr": 0.05,
+    "dense_1": 1,
+    "dense_2": 1,
+    "batch_size": 10,
+    "epochs": 1
+}

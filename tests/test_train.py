@@ -1,9 +1,11 @@
 from src.model import KerasModel
 from src.pipeline import Pipeline
 from src.train import TrainKerasModel
-from tests.resources.test_data import test_hyperparameter_space
+from tests.resources.test_data import (
+    test_hyperparameter_space, test_simple_train_hyperparameters)
 import ray
 import os
+import tensorflow as tf
 package_dir = os.path.dirname(os.path.abspath(__file__))
 pipeline = Pipeline(
     tfrecords_filenames=os.path.join(
@@ -13,24 +15,30 @@ train_keras_model = TrainKerasModel(pipeline=pipeline)
 
 class TestTrainKerasModel:
 
-    # def test_simple_train(self):
-    #     model = train_keras_model.simple_train(
-    #         {
-    #             "lr": 0.05,
-    #             "dense_1": 1,
-    #             "dense_2": 1,
-    #             "batch_size": 5,
-    #             "epochs": 2
-    #         })
-    #     assert model is not None
+    def test_simple_train(self):
+        model = train_keras_model.simple_train(
+            test_simple_train_hyperparameters)
+        assert model is not None
 
     def test_get_best_model(self):
-        # https://github.com/ray-project/ray/issues/8047
-        test_hyperparameter_space.update({"tfrecords_filenames": os.path.join(
-            package_dir, "resources", "test_data.tfrecord")})
-        print(test_hyperparameter_space)
+        test_hyperparameter_space.update(
+            {"tfrecords_filenames": os.path.join(
+                package_dir, "resources", "test_data.tfrecord")})
         tuned_model = train_keras_model.get_best_model(
             hyperparameter_space=test_hyperparameter_space,
             num_samples=1)
         print(tuned_model)
-        assert 1 == 2
+        assert tuned_model is not None
+
+    def test_save_model(self):
+        model = tf.keras.models.load_model(
+            os.path.join(
+                package_dir, "resources", "test_model"))
+        train_keras_model.save_model(
+            model, 
+            os.path.join(package_dir, "test_saved_model"))
+        list_dir = os.listdir(package_dir)
+        print(list_dir)
+        assert "test_saved_model" in list_dir
+        assert model is not None
+        # os.rmdir(os.path.join(package_dir, "test_a")

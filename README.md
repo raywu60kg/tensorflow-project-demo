@@ -10,6 +10,7 @@ Template for machine learning project
 - tensorflow tfrecord
 - ray tune
 - tensorflow serving
+
 ## Reference
 https://dzone.com/articles/data-science-project-folder-structure
 https://github.com/drivendata/cookiecutter-data-science
