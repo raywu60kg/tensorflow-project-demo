@@ -73,9 +73,10 @@ class TrainKerasModel(TrainModel):
         metrics = model.evaluate(test_dataset)
 
         model.save(filename, save_format='tf')
+        res = {
+            "name": filename,
+            "loss": float(metrics[0]),
+            "accuracy": float(metrics[1])}
         with open(os.path.join(filename, "metrics.json"), "w") as f:
-            json.dump(
-                {
-                    "name": filename,
-                    "loss": float(metrics[0]),
-                    "accuracy": float(metrics[1])}, f)
+            json.dump(res, f)
+        return res

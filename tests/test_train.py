@@ -6,6 +6,7 @@ from tests.resources.test_data import (
 import ray
 import os
 import tensorflow as tf
+import shutil
 package_dir = os.path.dirname(os.path.abspath(__file__))
 pipeline = Pipeline(
     tfrecords_filenames=os.path.join(
@@ -35,10 +36,10 @@ class TestTrainKerasModel:
             os.path.join(
                 package_dir, "resources", "test_model"))
         train_keras_model.save_model(
-            model, 
+            model,
             os.path.join(package_dir, "test_saved_model"))
         list_dir = os.listdir(package_dir)
         print(list_dir)
         assert "test_saved_model" in list_dir
         assert model is not None
-        # os.rmdir(os.path.join(package_dir, "test_a")
+        shutil.rmtree(os.path.join(package_dir, "test_saved_model"))
