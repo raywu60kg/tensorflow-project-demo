@@ -1,9 +1,7 @@
-from src.model import KerasModel
 from src.pipeline import Pipeline
 from src.train import TrainKerasModel
 from tests.resources.test_data import (
     test_hyperparameter_space, test_simple_train_hyperparameters)
-import ray
 import os
 import tensorflow as tf
 import shutil

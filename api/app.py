@@ -55,9 +55,19 @@ def get_model_metrics():
 
 
 @ app.put("/model", tags=["Model"])
-async def retrain_model(model_name: str, background_tasks: BackgroundTasks):
+async def retrain_model(background_tasks: BackgroundTasks):
     def task_retrain_model():
-
+        try:
+            logging.info("Query data from database")
+        except Exception as e:
+            logging.error(e)
+        
+        try:
+            logging.info("Write data to tfrecord")
+            
+        except Exception as e:
+            logging.error(e)
+            
         try:
             logging.info("Start Searching Best Model")
             best_model = train_keras_model.get_best_model(

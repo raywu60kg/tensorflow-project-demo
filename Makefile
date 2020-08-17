@@ -7,3 +7,6 @@ build:
 
 activate-tensorboard:
 	tensorboard --logdir ~/ray_results/tuning
+
+run-app-dev:
+	uvicorn api.app:app --reload

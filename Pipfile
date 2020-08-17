@@ -9,6 +9,7 @@ pytest = "*"
 autopep8 = "*"
 jupyter = "*"
 matplotlib = "*"
+flake8 = "*"
 
 [packages]
 tensorflow = "==2.1.0"
