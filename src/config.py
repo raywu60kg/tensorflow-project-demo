@@ -1,4 +1,3 @@
-import os
 from ray import tune
 
 predict_categories = ["Setosa", "Versicolor", "Virginica"]

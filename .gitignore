@@ -126,10 +126,7 @@ dmypy.json
 
 
 .vscode/
-# pytrain_estimator/Outputs/
-flask/
-pytrain_estimator/output_flask_result.csv
 .idea/
+data.tfrecord
 
 
-src/logs/

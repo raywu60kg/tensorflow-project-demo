@@ -6,7 +6,9 @@ class HealthCheckOutput(BaseModel):
 
 
 class MetricsOutput(BaseModel):
-    model_name: str
-    log_loss: float
-    auc: float
-    average_precision: float
+    name: str
+    loss: float
+    accuracy: float
+
+class RetrainModelOutput(BaseModel):
+    train: bool
