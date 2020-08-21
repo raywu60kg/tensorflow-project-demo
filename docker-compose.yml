@@ -16,7 +16,7 @@ services:
       - MODEL_NAME=lr
       - MODEL_BASE_PATH=/opt
     volumes:
-      - /opt/serving_model:/opt/serving_model
+      - /opt/models:/opt/serving_model
     ports:
       - 8501:8501
     depends_on:
@@ -24,12 +24,14 @@ services:
 
 
   training:
-    build: .
+    image: tensorflow-project-template:0.0.1
+    network_mode: "host"
     ports:
-      - 5000:5000
-    volumes:
-      - /opt/serving_model:/opt/serving_model
+      - 8000:8000
     depends_on:
       - db
+    command: 
+      - make
+      - init-training
         
 

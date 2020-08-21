@@ -54,7 +54,7 @@ def get_model_metrics():
                 model_metrics = json.load(f)
         except Exception as e:
             logging.error("Error in geting model metrics: {}".format(e))
-        models_metrics.update(model_metrics)
+        models_metrics.update({directory: model_metrics})
         return models_metrics
 
 
@@ -109,7 +109,7 @@ async def retrain_model(background_tasks: BackgroundTasks):
         try:
             logging.info("Start saving model")
             result = train_keras_model.save_model(
-                model=best_model, 
+                model=best_model,
                 filename=os.path.join(
                     package_dir, "..", "models", str(int(time.time()))))
         except Exception as e:
