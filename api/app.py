@@ -1,16 +1,16 @@
 from api.api_scheme import (
-    HealthCheckOutput, MetricsOutput, RetrainModelOutput)
+    HealthCheckOutput, RetrainModelOutput)
 from fastapi import BackgroundTasks
 from fastapi import FastAPI
-from src.config import num_samples, hyperparameter_space
+from src.config import num_samples, hyperparameter_space, models_dir
 from src.pipeline import PostgreSQL2Tfrecord, Pipeline
 from src.train import TrainKerasModel
 import gc
 import json
 import logging
 import os
-import uvicorn
 import time
+import uvicorn
 
 tags_metadata = [
     {
@@ -40,10 +40,9 @@ def health_check():
     return {"health": "True"}
 
 
-@app.get("/model/metrics", response_model=MetricsOutput, tags=["Model"])
+@app.get("/model/metrics", tags=["Model"])
 def get_model_metrics():
-    models_metrics = {}
-    models_dir = os.path.join(package_dir, "..", "models")
+    models_metrics = []
     for directory in os.listdir(models_dir):
         try:
             with open(
@@ -52,10 +51,12 @@ def get_model_metrics():
                         directory,
                         "metrics.json"), "r") as f:
                 model_metrics = json.load(f)
+            print(model_metrics)
         except Exception as e:
             logging.error("Error in geting model metrics: {}".format(e))
-        models_metrics.update({directory: model_metrics})
-        return models_metrics
+        models_metrics.append(
+            {"model_name": directory, "metrics": model_metrics})
+    return models_metrics
 
 
 @ app.put("/model", response_model=RetrainModelOutput, tags=["Model"])
@@ -111,9 +112,9 @@ async def retrain_model(background_tasks: BackgroundTasks):
             result = train_keras_model.save_model(
                 model=best_model,
                 filename=os.path.join(
-                    package_dir, "..", "models", str(int(time.time()))))
+                    models_dir, str(int(time.time()))))
         except Exception as e:
-            logging.error("Error in create data pipeline: {}".format(e))
+            logging.error("Error in saving model: {}".format(e))
 
         logging.critical("Retrain Finish. Training result: {}".format(result))
     background_tasks.add_task(task_retrain_model)

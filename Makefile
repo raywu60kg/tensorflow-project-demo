@@ -16,5 +16,8 @@ run-app:
 init-sql:
 	python -m scripts.csv2sql
 
-init-training: init-sql run-app
+deploy-default-model:
+	sudo cp -r default_model/* /opt/models/
+
+init-training: init-sql run-app deploy-default_model
 	

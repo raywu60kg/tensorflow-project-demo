@@ -6,9 +6,16 @@ Template for machine learning project
 - docker-compose
 - make
 
+## How to run this project
+```
+mkdir /opt/models
+chmod 777 /opt/models
+```
+
 ## tools
 - tensorflow tfrecord
 - ray tune
+- tensorboard
 - tensorflow serving
 
 ## Reference

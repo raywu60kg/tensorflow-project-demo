@@ -1,11 +1,10 @@
-import tensorflow as tf
-import ray
+from src.callback import TuneReporterCallback
+from src.model import KerasModel
+from src.pipeline import Pipeline
 import json
 import os
-from src.model import KerasModel
-from src.config import hyperparameter_space, num_samples
-from src.pipeline import Pipeline
-from src.callback import TuneReporterCallback
+import ray
+import tensorflow as tf
 
 keras_model = KerasModel()
 
@@ -74,7 +73,6 @@ class TrainKerasModel(TrainModel):
 
         model.save(filename, save_format='tf')
         res = {
-            "name": filename,
             "loss": float(metrics[0]),
             "accuracy": float(metrics[1])}
         with open(os.path.join(filename, "metrics.json"), "w") as f:

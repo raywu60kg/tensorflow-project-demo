@@ -5,7 +5,7 @@ hyperparameter_space = {
     "lr": tune.loguniform(0.001, 0.1),
     "dense_1": tune.uniform(2, 128),
     "dense_2": tune.uniform(2, 128),
-    "epochs": tune.uniform(1, 5),
+    "epochs": tune.uniform(10, 50),
     "batch_size": tune.sample_from([16, 32])
 }
 feature_names = [
@@ -14,4 +14,5 @@ feature_names = [
     'sepal_length',
     'sepal_width']
 label_name = "variety"
-num_samples = 20
+num_samples = 5
+models_dir = "/opt/models"

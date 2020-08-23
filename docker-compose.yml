@@ -13,14 +13,12 @@ services:
   serving:
     image: tensorflow/serving:2.1.0
     environment:
-      - MODEL_NAME=lr
+      - MODEL_NAME=models
       - MODEL_BASE_PATH=/opt
     volumes:
-      - /opt/models:/opt/serving_model
+      - /opt/models:/opt/models
     ports:
       - 8501:8501
-    depends_on:
-      - training
 
 
   training:
@@ -28,6 +26,9 @@ services:
     network_mode: "host"
     ports:
       - 8000:8000
+      - 6006:6006
+    volumes:
+      - /opt/models:/opt/models
     depends_on:
       - db
     command: 
