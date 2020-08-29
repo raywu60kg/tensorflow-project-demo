@@ -18,10 +18,10 @@ services:
   serving:
     image: tensorflow/serving:2.1.0
     environment:
-      - MODEL_NAME=models
+      - MODEL_NAME=tensorflow-project-demo
       - MODEL_BASE_PATH=/opt
     volumes:
-      - /opt/models:/opt/models
+      - /opt/tensorflow-project-demo:/opt/tensorflow-project-demo
     ports:
       - 8501:8501
 
@@ -32,7 +32,7 @@ services:
       - 8000:8000
       - 6006:6006
     volumes:
-      - /opt/models:/opt/models
+      - /opt/tensorflow-project-demo:/opt/tensorflow-project-demo
     depends_on:
       db:
         condition: service_healthy

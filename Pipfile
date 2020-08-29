@@ -10,6 +10,7 @@ autopep8 = "*"
 jupyter = "*"
 matplotlib = "*"
 flake8 = "*"
+jupyter-contrib-nbextensions = "*"
 
 [packages]
 tensorflow = "==2.1.0"

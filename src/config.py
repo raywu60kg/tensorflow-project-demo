@@ -15,4 +15,4 @@ feature_names = [
     'sepal_width']
 label_name = "variety"
 num_samples = 5
-models_dir = "/opt/models"
+models_dir = "/opt/tensorflow-project-demo"
