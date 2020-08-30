@@ -1,5 +1,8 @@
 # Tensorflow-Project-Demo
+![image](pictures/tensorflow-project-demo.png)
 For this project, I used the classic datasets iris to do the project demo. My personal goal for this project is to not only explore the data and build models, but to also build an API server with retrainable model. To achieve this goal, I used fastapi, tensorflow and ray tune.
+
+The project contain three services `db`, `serving` and `training`. When you train the model. the `training` module will query the `db` to get the iris data and start training the model. After the training process finish, it will give the model to `serving`. So that any client service can  connect to serving to get the prediction with given features.
 
 Also, I decided to develop this project to be the same as how data-related projects are developed in real-world scenarios, wherein the end goal of development is a project that is feasible for production. Therefore, I have put efforts on creating:
 
@@ -7,7 +10,8 @@ Also, I decided to develop this project to be the same as how data-related proje
 2. An API Server inside the `api/` folder;
 3. Files for deployment such as Dockerfile and docker-compose.yml;
 4. Documentations in the `docs/` folder; and
-5. Some necessary scripts in `scripts/` folder.
+5. Some necessary scripts in `scripts/` folder; and
+6. Configurations, included hyperparameters space in `config.py`.
 
 In the tensorflow part, I used very powerful tools:
 
@@ -31,11 +35,11 @@ select * from iris;
 ![image](pictures/PostgreSQL.png)
 
 ### Training
-The training service is a machine learning API that is open on port 8000. I used fastapi for the API server, so you can check it on **http://localhost:8000/docs** after you run the `training` service. 
+The training service is a machine learning API that is open on port 8000. I used fastapi for the API server, so you can check it on **http://localhost:8000/docs** after you run the `training` service. The hyperparameters search space is in the `src/config.py` so you can change them if you want.
 ![image](pictures/api-ui.png)
 
 ### Serving
-I use `Tensorflow Serving` to build the prediction server. It is a very powerful tools amount TensorFlow Extended (TFX) .
+I use `Tensorflow Serving` to build the prediction server. It is a very powerful tools amount TensorFlow Extended (TFX) . See more detail on [tensorflow document.](https://www.tensorflow.org/tfx/serving/api_rest)
 
 ## How to run this demo
 
@@ -84,15 +88,34 @@ curl -X POST "http://localhost:8501/v1/models/tensorflow-project-demo:predict"
     }
 }' 
 ```
+The response will be like:
+```
+{
+    "outputs": [
+        [
+            0.607119262,
+            0.392192692,
+            0.000688050292
+        ]
+    ]
+}
+```
 
+The output means the estimation in probability of categories Setosa,  Versicolor and Virginica respectively.
+
+## Note
+If you want to change the model structure, you can change the `model.py`. Also, If you want to change the hyperparameters search space, you can go to `config.py`.
+
+ About the hyperparameter search algorithm, I am using the random search for this demo but if you want to try other searching algorithm, you can change `train.py`.
 
 ## Here are some documentations
 [How to set up the working environment for this project](docs/dev_mode.md)
 
 [API example](docs/api_example.md)
+
 ## Reference
-https://dzone.com/articles/data-science-project-folder-structure
+- [Data science project folder Structure](https://dzone.com/articles/data-science-project-folder-structure)
 
-https://github.com/drivendata/cookiecutter-data-science
+- [Cookiecutter: Package for generate data science project](https://github.com/drivendata/cookiecutter-data-science)
 
-https://colab.research.google.com/github/ray-project/tutorial/blob/mastertune_exercises/exercise_1_basics.ipynb
+- [Ray tune example](https://colab.research.google.com/github/ray-project/tutorial/blob/mastertune_exercises/exercise_1_basics.ipynb)

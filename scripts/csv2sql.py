@@ -1,5 +1,6 @@
 import psycopg2
 import pandas as pd
+import logging
 
 
 def main():
@@ -10,7 +11,7 @@ def main():
         host="localhost",
         port="5432")
 
-    print("Opened database successfully")
+    logging.info("Opened database successfully")
 
     cur = conn.cursor()
     try:
@@ -22,9 +23,9 @@ def main():
             PETAL_WIDTH REAL,
             VARIETY TEXT);''')
     except Exception as e:
-        print("Table already exist: {}".format(e))
+        logging.info("Table already exist: {}".format(e))
         return 0
-    print("Table created successfully")
+    logging.info("Table created successfully")
 
     data = pd.read_csv("data/iris.csv")
     for idx in range(len(data)):
@@ -40,7 +41,7 @@ def main():
                     data["petal.length"][idx],
                     data["petal.width"][idx],
                     data["variety"][idx])))
-    print("Records created successfully")
+    logging.info("Records created successfully")
     conn.commit()
     conn.close()
 
