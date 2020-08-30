@@ -21,8 +21,6 @@ In the tensorflow part, I used very powerful tools:
 
 for building the project. 
 
-I have another project use lightgbm as the back bone model. Toke a look about the project [**lightgbm-project-demo**](https://github.com/raywu60kg/lightgbm-project-demo) 
-
 ## Services
 I have three services: `db`, `serving` and `training`.
 
@@ -35,8 +33,10 @@ select * from iris;
 ![image](pictures/PostgreSQL.png)
 
 ### Training
-The training service is a machine learning API that is open on port 8000. I used fastapi for the API server, so you can check it on **http://localhost:8000/docs** after you run the `training` service. The hyperparameters search space is in the `src/config.py` so you can change them if you want.
 ![image](pictures/api-ui.png)
+The training service is a machine learning API that is open on port 8000. I used fastapi for the API server, so you can check it on **http://localhost:8000/docs** after you run the `training` service. The hyperparameters search space is in the `src/config.py` so you can change them if you want.
+
+The Retraining process start from query the `db` and then it will write the data on local as tfrecord format. This move is able to reduce lots of memory usage during training. And tfrecord is a binary file therefore in normal case, it can also reduce the data storage problem.
 
 ### Serving
 I use `Tensorflow Serving` to build the prediction server. It is a very powerful tools amount TensorFlow Extended (TFX) . See more detail on [tensorflow document.](https://www.tensorflow.org/tfx/serving/api_rest)
@@ -107,6 +107,8 @@ The output means the estimation in probability of categories Setosa,  Versicolor
 If you want to change the model structure, you can change the `model.py`. Also, If you want to change the hyperparameters search space, you can go to `config.py`.
 
  About the hyperparameter search algorithm, I am using the random search for this demo but if you want to try other searching algorithm, you can change `train.py`.
+
+ I have another project use lightgbm as the back bone model. Take a look about the project [**lightgbm-project-demo**](https://github.com/raywu60kg/lightgbm-project-demo) 
 
 ## Here are some documentations
 [How to set up the working environment for this project](docs/dev_mode.md)
