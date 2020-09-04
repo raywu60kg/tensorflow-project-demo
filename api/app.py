@@ -29,10 +29,6 @@ app = FastAPI(
     version="0.0.1",
     openapi_tags=tags_metadata)
 package_dir = os.path.dirname(os.path.abspath(__file__))
-# pipeline = Pipeline(
-#     tfrecords_filenames=os.path.join(
-#         package_dir, "resources", "test_data.tfrecord"))
-# train_keras_model = TrainKerasModel(pipeline=pipeline)
 
 
 @app.get("/health", response_model=HealthCheckOutput, tags=["Default"])
@@ -42,6 +38,7 @@ def health_check():
 
 @app.get("/model/metrics", tags=["Model"])
 def get_model_metrics():
+    """Get the model metrics"""
     models_metrics = []
     for directory in os.listdir(models_dir):
         try:
@@ -61,6 +58,7 @@ def get_model_metrics():
 
 @ app.put("/model", response_model=RetrainModelOutput, tags=["Model"])
 async def retrain_model(background_tasks: BackgroundTasks):
+    """Retrain the model"""
     def task_retrain_model():
 
         try:

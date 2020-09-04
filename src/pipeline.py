@@ -16,10 +16,10 @@ class Db2Tfrecord:
 
 
 class PostgreSQL2Tfrecord(Db2Tfrecord):
-    def __init__(self):
-        self.config = 1
-
+    """Query data from PostgreSQL and write to tfrecord file."""
+    
     def query_db(self):
+        """Query data from PostgreSQL"""
         try:
             conn = psycopg2.connect(
                 database="database",
@@ -53,18 +53,16 @@ class PostgreSQL2Tfrecord(Db2Tfrecord):
         return data
 
     def format_data(self, data):
+        """Format the query data from the PostgreSQL"""
         data[label_name] = list(
             map(lambda x: predict_categories.index(x), data["variety"]))
         data[label_name] = tf.keras.utils.to_categorical(data[label_name])
         return data
 
     def write2tfrecord(self, data, filename):
+        """Write the formated data into tfrecord file."""
         with tf.io.TFRecordWriter(filename) as writer:
             for i in range(len(data[list(data.keys())[0]])):
-                # variety_feature_list = []
-                # for element in data["variety"][i]:
-                #     variety_feature_list.append(
-                #         tf.train.FloatList(value=[element]))
 
                 feature = {
                     "sepal_length": tf.train.Feature(
@@ -90,7 +88,14 @@ class PostgreSQL2Tfrecord(Db2Tfrecord):
 
 
 class Pipeline:
+    """Load the data from tfrecords.
+    
+    Attributes:
+        tfrecords_filenames: tfrecord file names in list
+    """
+
     def __init__(self, tfrecords_filenames):
+        """Init Pipeline with tfrecords_filenames"""
         self.features = {
             "sepal_length": tf.io.FixedLenFeature([], tf.float32),
             "sepal_width": tf.io.FixedLenFeature([], tf.float32),
@@ -101,11 +106,10 @@ class Pipeline:
 
         full_dataset = tf.data.TFRecordDataset(tfrecords_filenames)
         data_size = 0
-        for row in full_dataset:
+        for _ in full_dataset:
             data_size += 1
         self.data_size = data_size
         train_size = int(0.7 * data_size)
-        val_size = int(0.15 * data_size)
         test_size = int(0.15 * data_size)
         self.train_size = train_size
         full_dataset = full_dataset.shuffle(buffer_size=1)
@@ -116,6 +120,15 @@ class Pipeline:
         self.test_dataset = self.test_dataset.take(test_size)
 
     def parse_data(self, serialized):
+        """Format tfrecord data.
+        
+        Args:
+            serialized: The record in the tfrecord.
+        
+        Returns:
+            Formated record.
+        """
+        
         parsed_example = tf.io.parse_example(serialized, self.features)
 
         inputs = {}

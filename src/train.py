@@ -19,17 +19,28 @@ class TrainModel:
 
 
 class TrainKerasModel(TrainModel):
+    """Train the tensorflow keras model.
+
+    Attributes:
+        pipeline: pipeline object.
+    """
+    
     def __init__(self, pipeline):
         self.pipeline = pipeline
 
     def simple_train(self, hp):
+        """Fit the model with the data from pipeline
+        Args:
+            hp: hyperparameters in dictionary format.
+        """
+
         train_dataset = self.pipeline.get_train_data(hp["batch_size"])
         val_dataset = self.pipeline.get_val_data(hp["batch_size"])
         model = keras_model.create_model(
             learning_rate=hp["lr"],
             dense_1=hp["dense_1"],
             dense_2=hp["dense_2"])
-        # model.fit(self.train_dataset)
+
         model.fit(
             train_dataset,
             validation_data=val_dataset,
@@ -38,6 +49,16 @@ class TrainKerasModel(TrainModel):
         return model
 
     def get_best_model(self, hyperparameter_space, num_samples):
+        """Fit the model with data and find the best hyperparameter space
+        in the search space using ray tune.
+        Args:
+            hyperparameter_space: hyperparameter in dictionary format
+                with ray tune defined value.
+            num_samples: number of model that ray tune will train.
+        
+        Returns:
+            The best keras model within all the search space.
+        """
 
         def tuning(hp):
             import tensorflow as tf
@@ -68,6 +89,9 @@ class TrainKerasModel(TrainModel):
         return tuned_model
 
     def save_model(self, model, filename):
+        """Save the model for the serving usage and
+        also write the performance metrics.
+        """
         test_dataset = self.pipeline.get_test_data(batch_size=1)
         metrics = model.evaluate(test_dataset)
 

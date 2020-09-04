@@ -8,9 +8,19 @@ class Model:
 
 
 class KerasModel(Model):
+    """Keras model"""
+    
     def create_model(self, learning_rate, dense_1, dense_2):
+        """Create keras model
+        Args:
+            learning_rate: learning rate of the model.
+            dense_1: Number of dense for first fully-connected layer.
+            dense_2: Number of dense for second fully-connected layer.
+        
+        Returns:
+            keras model.
+        """
 
-        # model = tf.keras.models.Sequential()
         inputs = {}
         concatenated_feature = []
         for feature_name in feature_names:
